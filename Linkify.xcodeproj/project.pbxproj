@@ -10,6 +10,7 @@
 		B16D78F82CCD7A24005611FD /* Linkify.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B16D78EF2CCD7A24005611FD /* Linkify.framework */; };
 		B16D78FD2CCD7A24005611FD /* LinkifyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16D78FC2CCD7A24005611FD /* LinkifyTests.swift */; };
 		B16D790F2CCD8243005611FD /* LinkifyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B16D790E2CCD8243005611FD /* LinkifyService.swift */; };
+		B16D79152CCD88BF005611FD /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = B16D79142CCD88BF005611FD /* LICENSE.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +28,7 @@
 		B16D78F72CCD7A24005611FD /* LinkifyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LinkifyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B16D78FC2CCD7A24005611FD /* LinkifyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkifyTests.swift; sourceTree = "<group>"; };
 		B16D790E2CCD8243005611FD /* LinkifyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkifyService.swift; sourceTree = "<group>"; };
+		B16D79142CCD88BF005611FD /* LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +53,7 @@
 		B16D78E52CCD7A23005611FD = {
 			isa = PBXGroup;
 			children = (
+				B16D79142CCD88BF005611FD /* LICENSE.txt */,
 				B16D78F12CCD7A24005611FD /* Linkify */,
 				B16D78FB2CCD7A24005611FD /* LinkifyTests */,
 				B16D78F02CCD7A24005611FD /* Products */,
@@ -182,6 +185,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B16D79152CCD88BF005611FD /* LICENSE.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
