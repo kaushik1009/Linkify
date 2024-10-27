@@ -72,7 +72,7 @@ public class LinkifyService {
         label.attributedText = attributedText
         label.isUserInteractionEnabled = true
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleLinkTap(_:)))
+        let tapGesture = UITapGestureRecognizer(target: label, action: #selector(handleLinkTap(_:)))
         label.addGestureRecognizer(tapGesture)
     }
     
