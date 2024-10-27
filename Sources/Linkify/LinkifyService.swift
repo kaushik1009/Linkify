@@ -15,11 +15,6 @@
 import Foundation
 import UIKit
 
-// MARK: - LinkTapHandler
-public protocol LinkTapHandler: AnyObject {
-    func didTapLink(url: URL)
-}
-
 // MARK: - LinkifyService
 /// A service that detects URLs in a given string and applies link formatting to a UILabel.
 @available(iOS 12.0, *)
@@ -28,8 +23,6 @@ public class LinkifyService {
     public var textColor: UIColor
     /// The color used to highlight links in the text.
     public var linkColor: UIColor
-    /// New delegate property
-    public weak var delegate: LinkTapHandler?
     
     /// Initializes a new instance of the LinkifyService with specified text and link colors.
     /// - Parameters:
@@ -106,7 +99,7 @@ public class LinkifyService {
         /// Check if the tapped index corresponds to a link
         text!.enumerateAttribute(.link, in: NSRange(location: 0, length: text!.length), options: []) { (value, range, stop) in
             if NSLocationInRange(characterIndex, range), let url = value as? URL {
-                delegate?.didTapLink(url: url)
+                UIApplication.shared.open(url)
             }
         }
     }
