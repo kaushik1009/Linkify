@@ -13,31 +13,48 @@
 // limitations under the License.
 
 import XCTest
+import UIKit
 @testable import Linkify
 
-final class LinkifyTests: XCTestCase {
+@available(iOS 12.0, *)
+class LinkifyServiceWithTapDetectionTests: XCTestCase {
+    var linkifyService: LinkifyService!
+    var label: UILabel!
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    override func setUp() {
+        super.setUp()
+        // Initialize the service and UILabel before each test
+        linkifyService = LinkifyService(linkColor: .blue)
+        label = UILabel()
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    override func tearDown() {
+        // Clean up after each test
+        linkifyService = nil
+        label = nil
+        super.tearDown()
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    
+    /// Test that `formatText` correctly detects and colors links in the text.
+    func testLinkDetectionAndFormatting() {
+        let text = "Tap here: https://www.example.com"
+        let formattedText = linkifyService.formatText(text)
+        
+        // Check if formatted text contains the links with specified color
+        let linkAttributes = [NSAttributedString.Key.foregroundColor: linkifyService.linkColor]
+        
+        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        let matches = detector?.matches(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) ?? []
+        
+        for match in matches {
+            if let url = match.url, let range = Range(match.range, in: text) {
+                let nsRange = NSRange(range, in: text)
+                let attributes = formattedText.attributes(at: nsRange.location, effectiveRange: nil)
+                
+                // Check that each link has the correct attributes
+                XCTAssertEqual(attributes[.foregroundColor] as? UIColor, linkifyService.linkColor, "Link color does not match expected color.")
+                XCTAssertEqual(attributes[.link] as? URL, url, "Link URL is not set correctly in the formatted text.")
+            }
         }
     }
-
 }
