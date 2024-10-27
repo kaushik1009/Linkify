@@ -16,7 +16,7 @@ import Foundation
 import UIKit
 
 @available(iOS 12.0, *)
-public struct LinkifyService {
+public class LinkifyService {
     /// Specifies the color for detected links.
     public var linkColor: UIColor
     
@@ -70,5 +70,31 @@ public extension LinkifyService {
         let attributedText = formatText(text)
         label.attributedText = attributedText
         label.isUserInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleLinkTap(_:)))
+        label.addGestureRecognizer(tapGesture)
+    }
+    
+    /// Handles link tap for UILabel
+    ///
+    /// - Parameters:
+    ///   - gesture: The gesture recognizer to detect touches
+    @objc func handleLinkTap(_ gesture: UITapGestureRecognizer) {
+        guard let label = gesture.view as? UILabel, let text = label.attributedText else { return }
+        
+        let tapLocation = gesture.location(in: label)
+        let textStorage = NSTextStorage(attributedString: text)
+        let layoutManager = NSLayoutManager()
+        let textContainer = NSTextContainer(size: label.bounds.size)
+        
+        layoutManager.addTextContainer(textContainer)
+        textStorage.addLayoutManager(layoutManager)
+
+        let characterIndex = layoutManager.characterIndex(for: tapLocation, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
+        
+        text.enumerateAttribute(.link, in: NSRange(location: 0, length: text.length), options: []) { (value, range, stop) in
+            if NSLocationInRange(characterIndex, range), let url = value as? URL {
+                UIApplication.shared.open(url)
+            }
+        }
     }
 }
