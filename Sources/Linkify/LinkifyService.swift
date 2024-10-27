@@ -17,34 +17,47 @@ import UIKit
 
 @available(iOS 12.0, *)
 public class LinkifyService {
+    /// Specifies the foreground color for the texts
+    public var textColor: UIColor
+    
     /// Specifies the color for detected links.
     public var linkColor: UIColor
     
     /// Initializes `LinkifyService` with a specified link color.
     ///
-    /// - Parameter linkColor: The color to use for detected links.
-    public init(linkColor: UIColor = .blue) {
+    /// - Parameters:
+    ///    - textColor: The foreground color for the text
+    ///    - linkColor: The color to use for detected links.
+    public required init(textColor: UIColor = UIColor.white, linkColor: UIColor) {
+        self.textColor = textColor
         self.linkColor = linkColor
     }
 
     /// Formats a given string, detecting URLs and applying tappable attributes.
     ///
-    /// - Parameter text: The input string to format.
+    /// - Parameter text: The input optional string to format.
     /// - Returns: An attributed string with detected URLs styled.
-    public func formatText(_ text: String) -> NSAttributedString {
-        let attributedString = NSMutableAttributedString(string: text)
+    public func formatText(_ text: String?) -> NSAttributedString {
+        guard var text = text else {
+            return (NSMutableAttributedString(string: ""))
+        }
+        let fullRange = NSRange(location: 0, length: text.utf16.count)
         
-        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
-        let matches = detector?.matches(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) ?? []
+        var attributedString = NSMutableAttributedString(string: text)
+        attributedString.addAttribute(.foregroundColor, value: textColor, range: fullRange)
         
-        for match in matches {
-            if let range = Range(match.range, in: text) {
-                attributedString.addAttribute(.foregroundColor, value: linkColor, range: NSRange(range, in: text))
-                attributedString.addAttribute(.link, value: match.url!, range: NSRange(range, in: text))
+        // Check for website URLs
+        let websiteDetector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        if let matches = websiteDetector?.matches(in: text, options: [], range: fullRange) {
+            for match in matches {
+                if let url = match.url {
+                    attributedString.addAttribute(.foregroundColor, value: linkColor, range: match.range)
+                    attributedString.addAttribute(.link, value: url, range: match.range)
+                }
             }
         }
         
-        return attributedString
+        return (attributedString)
     }
 
     #if DEBUG
