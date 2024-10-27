@@ -79,10 +79,11 @@ public extension LinkifyService {
     /// - Parameters:
     ///   - gesture: The gesture recognizer to detect touches
     @objc func handleLinkTap(_ gesture: UITapGestureRecognizer) {
-        guard let label = gesture.view as? UILabel, let text = label.attributedText else { return }
+        guard let label = gesture.view as? UILabel else { return }
         
+        let text = label.attributedText
         let tapLocation = gesture.location(in: label)
-        let textStorage = NSTextStorage(attributedString: text)
+        let textStorage = NSTextStorage(attributedString: text!)
         let layoutManager = NSLayoutManager()
         let textContainer = NSTextContainer(size: label.bounds.size)
         
@@ -91,7 +92,7 @@ public extension LinkifyService {
 
         let characterIndex = layoutManager.characterIndex(for: tapLocation, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
         
-        text.enumerateAttribute(.link, in: NSRange(location: 0, length: text.length), options: []) { (value, range, stop) in
+        text!.enumerateAttribute(.link, in: NSRange(location: 0, length: text!.length), options: []) { (value, range, stop) in
             if NSLocationInRange(characterIndex, range), let url = value as? URL {
                 UIApplication.shared.open(url)
             }
