@@ -74,16 +74,6 @@ class ViewController: UIViewController {
   - `formatText(_:)`: Formats the given string by applying color attributes for text and links.
   - `apply(to:with:)`: Applies link formatting to a UILabel and sets up tap detection.
 
-### Handling Tap Events
-
-When users tap on a link, the framework will automatically navigate to the corresponding URL using the default web browser.
-
-```swift
-@objc public func handleLinkTap(_ gesture: UITapGestureRecognizer) {
-    // Logic to handle tap events on links
-}
-```
-
 ## Problem Solved
 
 The Linkify framework addresses the common challenge of manually detecting and formatting links in multiple lines of text. Instead of writing complex and repetitive code, developers can achieve link detection and formatting in just one line, improving code readability and maintainability.
