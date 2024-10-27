@@ -15,119 +15,92 @@
 import Foundation
 import UIKit
 
-/// A service that allows detection of links in a text and enables tapping on links in a UILabel.
+// MARK: - LinkifyService
+/// A service that detects URLs in a given string and applies link formatting to a UILabel.
 @available(iOS 12.0, *)
-public struct LinkifyService {
-    /// Specifies the color for detected links.
+public class LinkifyService {
+    /// The color of the regular text in the label.
+    public var textColor: UIColor
+    /// The color used to highlight links in the text.
     public var linkColor: UIColor
     
-    /// Initializes `LinkifyServiceWithTapDetection` with a specified link color.
-    ///
-    /// - Parameter linkColor: The color to use for detected links.
-    public init(linkColor: UIColor = .blue) {
+    /// Initializes a new instance of the LinkifyService with specified text and link colors.
+    /// - Parameters:
+    ///   - textColor: The color for the regular text (default is white).
+    ///   - linkColor: The color for the detected links (must be specified).
+    public required init(textColor: UIColor = .white, linkColor: UIColor) {
+        /// Assigns the provided text color to the textColor property.
+        self.textColor = textColor
+        /// Assigns the provided link color to the linkColor property.
         self.linkColor = linkColor
     }
     
-    /// Formats a given string, detecting URLs and applying tappable attributes.
-    ///
-    /// - Parameter text: The input string to format.
-    /// - Returns: An attributed string with detected URLs styled.
-    public func formatText(_ text: String) -> NSAttributedString {
+    /// Formats the given text by applying color attributes for text and links.
+    /// - Parameters:
+    ///    - text: The string to be formatted as an attributed string.
+    ///    - Returns: An NSAttributedString with the appropriate attributes applied.
+    public func formatText(_ text: String?) -> NSAttributedString {
+        guard let text = text else {
+            return (NSMutableAttributedString(string: ""))
+        }
+        
+        let fullRange = NSRange(location: 0, length: text.utf16.count)
+        
         let attributedString = NSMutableAttributedString(string: text)
+        attributedString.addAttribute(.foregroundColor, value: textColor, range: fullRange)
         
-        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
-        let matches = detector?.matches(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) ?? []
-        
-        for match in matches {
-            if let range = Range(match.range, in: text) {
-                attributedString.addAttribute(.foregroundColor, value: linkColor, range: NSRange(range, in: text))
-                attributedString.addAttribute(.link, value: match.url!, range: NSRange(range, in: text))
+        /// Check for website URLs
+        let websiteDetector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
+        if let matches = websiteDetector?.matches(in: text, options: [], range: fullRange) {
+            for match in matches {
+                if let url = match.url {
+                    attributedString.addAttribute(.foregroundColor, value: linkColor, range: match.range)
+                    attributedString.addAttribute(.link, value: url, range: match.range)
+                }
             }
         }
         
-        return attributedString
+        return (attributedString)
     }
     
-    /// Applies `LinkifyServiceWithTapDetection` to a UILabel, making only link text tappable.
-    ///
+    /// Applies link formatting to a UILabel, detecting URLs and setting up a tap gesture recognizer.
     /// - Parameters:
-    ///   - label: The UILabel to apply link styling.
-    ///   - text: The text content to display in the label.
-    ///   - linkTappedHandler: A closure to handle taps on detected links.
-    public func apply(to label: UILabel, with text: String, linkTappedHandler: @escaping (URL) -> Void) {
+    ///   - label: The UILabel to apply link formatting to.
+    ///   - text: The text string that may contain URLs.
+    public func apply(to label: UILabel, with text: String) {
         let attributedText = formatText(text)
         label.attributedText = attributedText
         label.isUserInteractionEnabled = true
         
-        // Attach custom link tap gesture recognizer
-        let tapRecognizer = LinkTapGestureRecognizer(linkTappedHandler: linkTappedHandler)
-        label.addGestureRecognizer(tapRecognizer)
-    }
-}
-
-/// A custom gesture recognizer to detect taps specifically within the link range in a `UILabel`.
-class LinkTapGestureRecognizer: UITapGestureRecognizer {
-    var linkTappedHandler: ((URL) -> Void)?
-
-    init(linkTappedHandler: @escaping (URL) -> Void) {
-        self.linkTappedHandler = linkTappedHandler
-        super.init(target: nil, action: nil)
-        addTarget(self, action: #selector(handleTap(_:)))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleLinkTap(_:)))
+        label.addGestureRecognizer(tapGesture)
     }
     
-    /// Method that handles the tap on specific link text areas.
-    /// - Parameter gesture: The gesture recognizer that detected the tap.
-    @objc public func handleTap(_ gesture: UITapGestureRecognizer) {
-        guard let label = gesture.view as? UILabel,
-              let attributedText = label.attributedText,
-              gesture.state == .ended else {
-            return
-        }
+    /// Handles tap gestures on the label to detect if a link was tapped.
+    /// - Parameter gesture: The gesture recognizer that triggered the action.
+    @objc public func handleLinkTap(_ gesture: UITapGestureRecognizer) {
+        guard let label = gesture.view as? UILabel else { return }
+        let text = label.attributedText
         
-        // Get the tapped location within the label
+        /// Get the location of the tap
         let tapLocation = gesture.location(in: label)
         
-        // Convert location to character index in attributed text
-        guard let linkURL = getTappedLink(in: attributedText, at: tapLocation, in: label) else {
-            return
-        }
-        
-        // If a link was tapped, execute the handler with the URL
-        linkTappedHandler?(linkURL)
-    }
-    
-    /// Determines if the tap location corresponds to a link within the label.
-    /// - Parameters:
-    ///   - attributedText: The attributed text of the label.
-    ///   - location: The location tapped within the label.
-    ///   - label: The label view where the tap occurred.
-    /// - Returns: The URL if a link was tapped; otherwise, nil.
-    private func getTappedLink(in attributedText: NSAttributedString, at location: CGPoint, in label: UILabel) -> URL? {
-        // Create a text container and layout manager to measure text layout
-        let textStorage = NSTextStorage(attributedString: attributedText)
+        /// Create a layout manager to determine which character was tapped
+        let textStorage = NSTextStorage(attributedString: text!)
         let layoutManager = NSLayoutManager()
         let textContainer = NSTextContainer(size: label.bounds.size)
         
-        textContainer.lineFragmentPadding = 0.0
-        textContainer.maximumNumberOfLines = label.numberOfLines
-        textContainer.lineBreakMode = label.lineBreakMode
-        
         layoutManager.addTextContainer(textContainer)
         textStorage.addLayoutManager(layoutManager)
+
+        /// Determine the index of the character tapped
+        let characterIndex = layoutManager.characterIndex(for: tapLocation, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
         
-        // Get the character index at the tapped point
-        let tappedIndex = layoutManager.characterIndex(
-            for: location,
-            in: textContainer,
-            fractionOfDistanceBetweenInsertionPoints: nil
-        )
-        
-        // Check if the attributed text at the tapped index contains a link attribute
-        let attributes = attributedText.attributes(at: tappedIndex, effectiveRange: nil)
-        if let linkURL = attributes[.link] as? URL {
-            return linkURL
+        /// Check if the tapped index corresponds to a link
+        text!.enumerateAttribute(.link, in: NSRange(location: 0, length: text!.length), options: []) { (value, range, stop) in
+            if NSLocationInRange(characterIndex, range), let url = value as? URL {
+                UIApplication.shared.open(url)
+            }
         }
-        
-        return nil
     }
 }

@@ -41,7 +41,7 @@ class LinkifyServiceWithTapDetectionTests: XCTestCase {
         let formattedText = linkifyService.formatText(text)
         
         // Check if formatted text contains the links with specified color
-        let linkAttributes = [NSAttributedString.Key.foregroundColor: linkifyService.linkColor]
+        _ = [NSAttributedString.Key.foregroundColor: linkifyService.linkColor]
         
         let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue)
         let matches = detector?.matches(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) ?? []
